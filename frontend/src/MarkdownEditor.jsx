@@ -2,13 +2,25 @@ import { useState, useEffect } from "react";
 import { marked } from "marked";
 import mermaid from "mermaid";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "http://localhost:1234";
 
 const MarkdownEditor = () => {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  }; 
   const [markdown, setMarkdown] = useState(
     "# Hello Markdown\n```mermaid\ngraph TD; A-->B; B-->C; C-->D;\n```"
   );
   const [filename, setFilename] = useState("document.md");
+  const [fileList, setFileList] = useState(["document.md"]);
 
   useEffect(() => {
     mermaid.initialize({ startOnLoad: true });
@@ -17,6 +29,9 @@ const MarkdownEditor = () => {
     }, 100);
   }, [markdown]);
 
+  useEffect(() => {
+  listDir();
+  }, []);
   const downloadMarkdown = () => {
     const blob = new Blob([markdown], { type: "text/markdown" });
     const link = document.createElement("a");
@@ -26,13 +41,19 @@ const MarkdownEditor = () => {
   };
 
   const saveMarkdown = async () => {
-    await fetch(`${API_URL}/save`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ filename, content: markdown }),
-    });
-    alert("Fichier sauvegardé !");
-  };
+    try {
+      const response= await fetch(`${API_URL}/save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename, content: markdown }),
+      });
+      if (!response.ok) throw new Error("Erreur serveur");
+      alert("Fichier sauvegardé !");
+    } catch (error) {
+    console.error("Erreur lors de la sauvegarde : "+ `${API_URL}/save`, error);
+    alert("Impossible de sauvegarder.");
+  }
+};
 
   const loadMarkdown = async () => {
     const response = await fetch(`${API_URL}/load/${filename}`);
@@ -44,18 +65,64 @@ const MarkdownEditor = () => {
     setMarkdown(data.content);
   };
 
+  const listDir = async () => {
+    const response = await fetch(`${API_URL}/dir/list`);
+    if (!response.ok) {
+      alert("Fichier introuvable");
+      return;
+    }
+    const data = await response.json();
+    console.log(data);
+    setFileList(data.content);
+  };
+  const downloadMermaidSvg = () => {
+  const svgElement = document.querySelector(".language-mermaid svg");
+  if (!svgElement) {
+    alert("Graph Mermaid non trouvé !");
+    return;
+  }
+
+  const serializer = new XMLSerializer();
+  const svgString = serializer.serializeToString(svgElement);
+  const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.download = "diagramme-mermaid.svg";
+  link.href = url;
+  link.click();
+};
+
   return (
     <div>
       <h1 className="text-xl font-bold mb-4">Markdown & Mermaid Editor</h1>
+      <button
+        className="p-2 bg-gray-500  rounded mb-2"
+        onClick={toggleFullscreen}
+      >
+        {isFullscreen ? "Quitter le plein écran" : "Activer le plein écran"}
+      </button>
       <div className="flex flex-row">
+        <select
+          className="p-2 border rounded"
+          value={filename}
+          onChange={(e) => setFilename(e.target.value)}
+          onClick={(e) => listDir()}
+        >
+        {fileList.map((file) => (
+          <option key={file} value={file}>
+            {file}
+          </option>
+        ))}
+        </select>
         <input
           type="text"
-          className="p-2 border rounded w-full mb-2"
+          className="p-2 border rounded w-full"
           placeholder="Nom du fichier"
           value={filename}
           onChange={(e) => setFilename(e.target.value)}
         />
-        <div className="flex gap-2 mt-2">
+        <div className="flex gap-2 ">
           <button
             className="p-2 bg-blue-500 rounded"
             onClick={downloadMarkdown}
@@ -67,6 +134,12 @@ const MarkdownEditor = () => {
           </button>
           <button className="p-2 bg-gray-500  rounded" onClick={loadMarkdown}>
             Charger
+          </button>
+          <button className="p-2 bg-gray-500  rounded" onClick={listDir}>
+            Lister
+          </button>
+          <button className="p-2 bg-purple-500 rounded" onClick={downloadMermaidSvg}>
+            Télécharger Graph
           </button>
         </div>
       </div>

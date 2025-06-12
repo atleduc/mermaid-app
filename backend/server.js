@@ -4,10 +4,25 @@ const path = require("path");
 const cors = require("cors");
 
 const app = express();
-const PORT = 5000;
+const PORT = 1234;
 
 app.use(express.json());
-app.use(cors());
+app.get("/", (req,res) => {
+  res.send("the server is running");
+})
+app.use(cors({
+  origin: "http://localhost:5173", // Change si ton frontend est ailleurs
+  methods: ["GET","POST","OPTIONS"],
+  //allowedHeaders: "Content-Type"
+}));
+
+// Gérer les requêtes preflight OPTIONS
+app.options("*", (req, res) => {
+  res.set("Access-Control-Allow-Origin", "http://localhost:5173");
+  res.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type");
+  res.status(200).send();
+});
 
 const FILE_PATH = path.join(__dirname, "documents");
 if (!fs.existsSync(FILE_PATH)) {
@@ -35,6 +50,12 @@ app.get("/load/:filename", (req, res) => {
   }
   
   const content = fs.readFileSync(filePath, "utf8");
+  res.json({ content });
+});
+
+app.get("/dir/list", (req, res) => {
+   
+  const content = fs.readdirSync(FILE_PATH);
   res.json({ content });
 });
 
