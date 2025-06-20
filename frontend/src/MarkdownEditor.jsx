@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { marked } from "marked";
+import { FaFileArrowDown, FaImage, FaFloppyDisk, FaRetweet, FaRectangleList, FaArrowsToCircle, FaArrowsUpDownLeftRight   } from "react-icons/fa6";
 import mermaid from "mermaid";
 
 const API_URL = "http://localhost:1234";
@@ -95,13 +96,15 @@ const MarkdownEditor = () => {
 
   return (
     <div>
-      <h1 className="text-xl font-bold mb-4">Markdown & Mermaid Editor</h1>
+       <div className="flex flex-row justify-between">
+      <h1 className="text-4xl font-bold mb-4">Markdown & Mermaid Editor</h1>
       <button
-        className="p-2 bg-gray-500  rounded mb-2"
+        className=" p-2 bg-gray-500  rounded mb-2"
         onClick={toggleFullscreen}
       >
-        {isFullscreen ? "Quitter le plein écran" : "Activer le plein écran"}
+        {isFullscreen ? <FaArrowsToCircle />  : <FaArrowsUpDownLeftRight />}
       </button>
+      </div>
       <div className="flex flex-row">
         <select
           className="p-2 border rounded"
@@ -127,19 +130,19 @@ const MarkdownEditor = () => {
             className="p-2 bg-blue-500 rounded"
             onClick={downloadMarkdown}
           >
-            Télécharger Markdown
+            <FaFileArrowDown />
           </button>
           <button className="p-2 bg-green-500 rounded" onClick={saveMarkdown}>
-            Sauvegarder
+            <FaFloppyDisk />
           </button>
           <button className="p-2 bg-gray-500  rounded" onClick={loadMarkdown}>
-            Charger
+            <FaRetweet ></FaRetweet>
           </button>
           <button className="p-2 bg-gray-500  rounded" onClick={listDir}>
-            Lister
+            <FaRectangleList />
           </button>
-          <button className="p-2 bg-purple-500 rounded" onClick={downloadMermaidSvg}>
-            Télécharger Graph
+          <button className="p-2 bg-purple-500 rounded" onClick={downloadMermaidSvg} alt="Download svg">
+            <FaImage />
           </button>
         </div>
       </div>
