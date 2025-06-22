@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { marked } from "marked";
 import { FaFileArrowDown, FaImage, FaFloppyDisk, FaRetweet, FaRectangleList, FaArrowsToCircle, FaArrowsUpDownLeftRight   } from "react-icons/fa6";
+import { Button, Popover } from "flowbite-react";
 import mermaid from "mermaid";
 
 const API_URL = "http://localhost:1234";
@@ -26,7 +27,7 @@ const MarkdownEditor = () => {
   useEffect(() => {
     mermaid.initialize({ startOnLoad: true });
     setTimeout(() => {
-      mermaid.init(undefined, document.querySelectorAll(".language-mermaid"));
+      mermaid.run({querySelector: ".language-mermaid"});
     }, 100);
   }, [markdown]);
 
@@ -98,12 +99,15 @@ const MarkdownEditor = () => {
     <div>
        <div className="flex flex-row justify-between">
       <h1 className="text-4xl font-bold mb-4">Markdown & Mermaid Editor</h1>
-      <button
+      <Popover content="plein écran" trigger="hover">
+      <Button
         className=" p-2 bg-gray-500  rounded mb-2"
         onClick={toggleFullscreen}
       >
         {isFullscreen ? <FaArrowsToCircle />  : <FaArrowsUpDownLeftRight />}
-      </button>
+      </Button>
+      </Popover>
+      
       </div>
       <div className="flex flex-row">
         <select
@@ -126,24 +130,37 @@ const MarkdownEditor = () => {
           onChange={(e) => setFilename(e.target.value)}
         />
         <div className="flex gap-2 ">
+          <Popover content="Download .MD" trigger="hover">
           <button
             className="p-2 bg-blue-500 rounded"
             onClick={downloadMarkdown}
           >
             <FaFileArrowDown />
           </button>
+          </Popover>
+
+          <Popover content="Save to Disk" trigger="hover">
           <button className="p-2 bg-green-500 rounded" onClick={saveMarkdown}>
             <FaFloppyDisk />
           </button>
+          </Popover>
+
+          <Popover content="Refresh" trigger="hover">
           <button className="p-2 bg-gray-500  rounded" onClick={loadMarkdown}>
             <FaRetweet ></FaRetweet>
           </button>
+          </Popover>
+
+          <Popover content="Refresh file list options" trigger="hover">
           <button className="p-2 bg-gray-500  rounded" onClick={listDir}>
             <FaRectangleList />
           </button>
+          </Popover>
+          <Popover content="Download Mermaid (.svg)" trigger="hover">
           <button className="p-2 bg-purple-500 rounded" onClick={downloadMermaidSvg} alt="Download svg">
             <FaImage />
           </button>
+          </Popover>   
         </div>
       </div>
       <div className="flex flex-row">
